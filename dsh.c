@@ -1,8 +1,9 @@
 #include "dsh.h"
-
+//lalala
 void seize_tty(pid_t callingprocess_pgid); /* Grab control of the terminal for the calling process pgid.  */
 void continue_job(job_t *j); /* resume a stopped job */
 void spawn_job(job_t *j, bool fg); /* spawn a new job */
+void redirection(process_t *job);
 
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
@@ -46,6 +47,39 @@ void new_child(job_t *j, process_t *p, bool fg)
  * pgid: this feature is used to start the second or 
  * subsequent processes in a pipeline.
  * */
+
+/*helper method for IO-redirection*/
+void redirection(process_t *job){
+    if (process -> ifile!=NULL) {//input redirection
+        int source = open(process -> ifile, O_RDONLY);
+        if(source < 0) {
+            ioerror("Fail to open input file");
+        }
+        else {
+            dup2(source, STDIN_FILENO);
+            close(source);
+        }
+    }
+    
+    if (process -> ofile!=NULL) {//output redirection
+        int target = creat(process -> ofile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWOTH | S_IROTH);
+        if (target <0) {
+            ioerror("Fail to open or create output file");
+        }
+        else {
+            dup2(target, STDOUT_FILENO);
+            close(target);
+        }
+    }
+    
+}
+
+//helper function for IO errors
+void ioerror(const char *message) {
+
+   perror(message);
+   exit(1);
+}
 
 void spawn_job(job_t *j, bool fg) 
 {
