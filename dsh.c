@@ -178,7 +178,6 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
   }
   else if (!strcmp("fg", argv[0])) {
     /* Your code here */
-    job_t *
     return true;
   }
   return false;       /* not a builtin command */
