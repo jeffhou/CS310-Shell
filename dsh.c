@@ -114,9 +114,19 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
             return true;
         }
 	else if (!strcmp("cd", argv[0])) {
-            /* Your code here */
-        }
-        else if (!strcmp("bg", argv[0])) {
+    /* Your code here */
+    if(!argv[1] == NULL && argc > 1){ // user specifies directory
+      if(chdir(argv[1]) < 0){
+        perror("Error: cd build-in command failed to go to the designated directory");
+      }
+    } else { // user just types "cd" without a specified directory; go to home directory in default
+      if(chdir(getenv("HOME")) < 0){
+        perror("Error: cd build-in command failed to go to HOME directory");
+      }
+    }
+    return true;
+  }
+        else if (!strcmp("bg", argv[0])) {//optional
             /* Your code here */
         }
         else if (!strcmp("fg", argv[0])) {
