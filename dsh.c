@@ -4,6 +4,7 @@ void seize_tty(pid_t callingprocess_pgid); /* Grab control of the terminal for t
 void continue_job(job_t *j); /* resume a stopped job */
 void spawn_job(job_t *j, bool fg); /* spawn a new job */
 void redirection(process_t *job);
+job_t* find_job_by_pgid(pid_t pgid, job_t *first_job)
 
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
@@ -11,6 +12,17 @@ int set_child_pgid(job_t *j, process_t *p)
     if (j->pgid < 0) /* first child: use its pid for job pgid */
         j->pgid = p->pid;
     return(setpgid(p->pid,j->pgid));
+}
+
+/* Find the job with the given pgid*/
+job_t* find_job_by_pgid(pid_t pgid, job_t *first_job){
+  job_t *j = first_job;
+  if(!j) return NULL;
+  while(j->pgid != pgid && j->next != NULL)
+    j = j->next;
+  if(j->pgid == pgid)
+    return j;
+  return NULL;
 }
 
 /* Creates the context for a new child by setting the pid, pgid and tcsetpgrp */
@@ -160,13 +172,16 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
     }
     return true;
   }
-        else if (!strcmp("bg", argv[0])) {//optional
-            /* Your code here */
-        }
-        else if (!strcmp("fg", argv[0])) {
-            /* Your code here */
-        }
-        return false;       /* not a builtin command */
+  else if (!strcmp("bg", argv[0])) { //optional
+    /* Your code here */
+    return true;
+  }
+  else if (!strcmp("fg", argv[0])) {
+    /* Your code here */
+    job_t *
+    return true;
+  }
+  return false;       /* not a builtin command */
 }
 
 /* Build prompt messaage */
