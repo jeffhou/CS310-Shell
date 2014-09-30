@@ -205,13 +205,13 @@ int main()
 	DEBUG("Successfully initialized\n");
 
 	while(1) {
-        job_t *j = NULL;
+    job_t *j = NULL;
 		if(!(j = readcmdline(promptmsg()))) {
 			if (feof(stdin)) { /* End of file (ctrl-d) */
 				fflush(stdout);
 				printf("\n");
 				exit(EXIT_SUCCESS);
-           		}
+      }
 			continue; /* NOOP; user entered return or spaces with return */
 		}
 
