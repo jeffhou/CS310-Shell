@@ -4,7 +4,8 @@ void seize_tty(pid_t callingprocess_pgid); /* Grab control of the terminal for t
 void continue_job(job_t *j); /* resume a stopped job */
 void spawn_job(job_t *j, bool fg); /* spawn a new job */
 void redirection(process_t *job);
-job_t* find_job_by_pgid(pid_t pgid, job_t *first_job)
+job_t* find_job_by_pgid(pid_t pgid, job_t *first_job);
+void devilError(const char *message);
 
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
@@ -65,7 +66,7 @@ void redirection(process_t *job){
     if (process -> ifile != NULL) {//input redirection
         int source = open(process -> ifile, O_RDONLY);
         if(source < 0) {
-            ioerror("Fail to open input file");
+            devilError("Error: fail to open input file");
         }
         else {
             dup2(source, STDIN_FILENO);
@@ -76,7 +77,7 @@ void redirection(process_t *job){
     if (process -> ofile!=NULL) {//output redirection
         int target = creat(process -> ofile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWOTH | S_IROTH);
         if (target <0) {
-            ioerror("Fail to open or create output file");
+            devilError("Error: fail to open or create output file");
         }
         else {
             dup2(target, STDOUT_FILENO);
@@ -87,8 +88,8 @@ void redirection(process_t *job){
 }
 
 //helper function for IO errors
-void ioerror(const char *message) {
-   perror("Error: " + message);
+void devilError(const char *message) {
+   perror(message);
    exit(1);
 }
 
@@ -135,8 +136,9 @@ void spawn_job(job_t *j, bool fg)
 /* Sends SIGCONT signal to wake up the blocked job */
 void continue_job(job_t *j) 
 {
-     if(kill(-j->pgid, SIGCONT) < 0)
-          perror("kill(SIGCONT)");
+     if(kill(-j->pgid, SIGCONT) < 0){
+        perror("Error: kill(SIGCONT)");
+     }
 }
 
 
@@ -160,13 +162,13 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
         }
 	else if (!strcmp("cd", argv[0])) {
     /* Your code here */
-    if(!argv[1] == NULL && argc > 1){ // user specifies directory
+    if(argv[1] != NULL && argc > 1){ // user specifies directory
       if(chdir(argv[1]) < 0){
-        ioerror("cd build-in command failed to go to the designated directory");
+        devilError("Error: cd build-in command failed to go to the designated directory");
       }
     } else { // user just types "cd" without a specified directory; go to home directory in default
       if(chdir(getenv("HOME")) < 0){
-        ioerror("cd build-in command failed to go to HOME directory");
+        devilError("Error: cd build-in command failed to go to HOME directory");
       }
     }
     return true;
@@ -186,14 +188,14 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
 char* promptmsg() 
 {
     /* Modify this to include pid */
-	return "dsh$ ";
+	return ("dsh_%d$ ", getpid());
 }
 
 /* Fork wrapper class: handles error handling */
 pid_t Fork(void){
   pid_t pid;
   if((pid = fork()) < 0){
-    ioerror("Fork error");
+    devilError("Fork error");
   }
   return pid;
 }
