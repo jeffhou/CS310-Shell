@@ -16,7 +16,7 @@ int set_child_pgid(job_t *j, process_t *p)
     return(setpgid(p->pid,j->pgid));
 }
 
-/* Find the job with the given pgid*/
+/* Find the job with the given pgid */
 job_t* find_job_by_pgid(pid_t pgid, job_t *first_job){
   job_t *j = first_job;
   if(!j) return NULL;
@@ -45,8 +45,9 @@ void new_child(job_t *j, process_t *p, bool fg)
          /* also establish child process group in child to avoid race (if parent has not done it yet). */
          set_child_pgid(j, p);
 
-         if(fg) // if fg is set
-		seize_tty(j->pgid); // assign the terminal
+         if(fg){
+          seize_tty(j->pgid); // assign the terminal
+         } 
 
          /* Set the handling for job control signals back to the default. */
          signal(SIGTTOU, SIG_DFL);
@@ -107,29 +108,29 @@ void spawn_job(job_t *j, bool fg)
 	  
 	  switch (pid = fork()) {
 
-          case -1: /* fork failure */
-            perror("fork");
-            exit(EXIT_FAILURE);
+      case -1: /* fork failure */
+        perror("fork");
+        exit(EXIT_FAILURE);
 
-          case 0: /* child process  */
-            p->pid = getpid();	    
-            new_child(j, p, fg);
+      case 0: /* child process  */
+        p->pid = getpid();	    
+        new_child(j, p, fg);
             
-	    /* YOUR CODE HERE?  Child-side code for new process. */
-            perror("New child should have done an exec");
-            exit(EXIT_FAILURE);  /* NOT REACHED */
-            break;    /* NOT REACHED */
+	      /* YOUR CODE HERE?  Child-side code for new process. */
+        perror("New child should have done an exec");
+        exit(EXIT_FAILURE);  /* NOT REACHED */
+        break;    /* NOT REACHED */
 
-          default: /* parent */
+      default: /* parent */
             /* establish child process group */
-            p->pid = pid;
-            set_child_pgid(j, p);
+        p->pid = pid;
+        set_child_pgid(j, p);
 
             /* YOUR CODE HERE?  Parent-side code for new process.  */
-          }
+    }
 
             /* YOUR CODE HERE?  Parent-side code for new job.*/
-	    seize_tty(getpid()); // assign the terminal back to dsh
+	  seize_tty(getpid()); // assign the terminal back to dsh
 
 	}
 }
@@ -189,7 +190,7 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
 char* promptmsg() 
 {
     /* Modify this to include pid */
-    //if (!is_interactive) return ""; // in batch mode don't print prompt
+    //if(!is_interactive) return ""; // in batch mode don't print prompt
     char *prompt = (char *) malloc (sizeof(char) * 50);
     sprintf(prompt, "dsh-%d$: ", getpid());
     return prompt;
