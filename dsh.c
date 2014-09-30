@@ -7,8 +7,13 @@ job_t* find_job_by_pgid(pid_t pgid, job_t *first_job);
 void devilError(const char *message);
 pid_t Fork(void);
 
+pid_t dsh_pgid;         /* process group id of dsh */
+int dsh_terminal_fd;    /* terminal file descriptor of dsh */
+int dsh_is_interactive; /* interactive or batch mode */
+
 /* Initializes the global var jobs_list */
 job_t* jobs_list = NULL;
+
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
 {
@@ -188,12 +193,12 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
     /* Your code here */
     job_t* job;
     if(argv[1] != NULL && argc > 1){
-      job = find_job_by_pgid((pid_t) atoi(argv[1]), first_job);
+      job = find_job_by_pgid((pid_t) atoi(argv[1]), jobs_list);
     } else {
-      job = find_last_job(first_job);
+      job = find_last_job(jobs_list);
     }
 
-    if(job != NULL){
+    if(job != NULL && job->pgid != -1){
       job->bg = false;
       seize_tty(job->pgid);
       continue_job(job);
