@@ -6,6 +6,7 @@ void spawn_job(job_t *j, bool fg); /* spawn a new job */
 void redirection(process_t *job);
 job_t* find_job_by_pgid(pid_t pgid, job_t *first_job);
 void devilError(const char *message);
+pid_t Fork(void);
 
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
