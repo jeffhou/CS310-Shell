@@ -234,20 +234,20 @@ int main()
 	init_dsh();
 	DEBUG("Successfully initialized\n");
     /* creating dummy job at beginning of list */
-    jobs_list = (job_t*) malloc(sizeof(jobs_t));
+    jobs_list = (job_t*) malloc(sizeof(job_t));
     jobs_list->next = NULL;
     jobs_list->commandinfo = NULL;
     jobs_list->first_process = NULL;
     jobs_list->pgid = -1;
     jobs_list->notified = true;
     jobs_list->bg = true;
-    jobs_list->mystdin = NULL;
-    jobs_list->mystdout = NULL;
-    jobs_list->mystderr = NULL;
+    jobs_list->mystdin = 0;
+    jobs_list->mystdout = 0;
+    jobs_list->mystderr = 0;
 
     while(1) {
         job_t *j = NULL;
-		tif(!(j = readcmdline(promptmsg()))) {
+		if(!(j = readcmdline(promptmsg()))) {
 			if (feof(stdin)) { /* End of file (ctrl-d) */
 				fflush(stdout);
 				printf("\n");
