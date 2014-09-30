@@ -62,7 +62,7 @@ void new_child(job_t *j, process_t *p, bool fg)
 
 /*helper method for IO-redirection*/
 void redirection(process_t *job){
-    if (process -> ifile!=NULL) {//input redirection
+    if (process -> ifile != NULL) {//input redirection
         int source = open(process -> ifile, O_RDONLY);
         if(source < 0) {
             ioerror("Fail to open input file");
@@ -88,8 +88,7 @@ void redirection(process_t *job){
 
 //helper function for IO errors
 void ioerror(const char *message) {
-
-   perror(message);
+   perror("Error: " + message);
    exit(1);
 }
 
@@ -163,11 +162,11 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
     /* Your code here */
     if(!argv[1] == NULL && argc > 1){ // user specifies directory
       if(chdir(argv[1]) < 0){
-        perror("Error: cd build-in command failed to go to the designated directory");
+        ioerror("cd build-in command failed to go to the designated directory");
       }
     } else { // user just types "cd" without a specified directory; go to home directory in default
       if(chdir(getenv("HOME")) < 0){
-        perror("Error: cd build-in command failed to go to HOME directory");
+        ioerror("cd build-in command failed to go to HOME directory");
       }
     }
     return true;
@@ -188,6 +187,15 @@ char* promptmsg()
 {
     /* Modify this to include pid */
 	return "dsh$ ";
+}
+
+/* Fork wrapper class: handles error handling */
+pid_t Fork(void){
+  pid_t pid;
+  if((pid = fork()) < 0){
+    ioerror("Fork error");
+  }
+  return pid;
 }
 
 int main() 
