@@ -17,7 +17,8 @@ int set_child_pgid(job_t *j, process_t *p)
 }
 
 /* Find the job with the given pgid */
-job_t* find_job_by_pgid(pid_t pgid, job_t *first_job){
+job_t* find_job_by_pgid(pid_t pgid, job_t *first_job)
+{
   job_t *j = first_job;
   if(!j) return NULL;
   while(j->pgid != pgid && j->next != NULL)
@@ -181,6 +182,22 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
   }
   else if (!strcmp("fg", argv[0])) {
     /* Your code here */
+    job_t* job;
+    if(argv[1] != NULL && argc > 1){
+      job = find_job_by_pgid((pid_t) atoi(argv[1]), first_job);
+    } else {
+      job = find_last_job(first_job);
+    }
+
+    if(job != NULL){
+      job->bg = false;
+      seize_tty(job->pgid);
+      continue_job(job);
+      //handle_job(job);
+      //seize_tty(getpid());
+    } else {
+      devilError("Error: fg built-in command failed to find a named job");
+    }
     return true;
   }
   return false;       /* not a builtin command */
@@ -190,14 +207,17 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
 char* promptmsg() 
 {
     /* Modify this to include pid */
-    //if(!is_interactive) return ""; // in batch mode don't print prompt
+    if(!dsh_is_interactive){ // batch mode
+      return ""; // print nothing
+    }
     char *prompt = (char *) malloc (sizeof(char) * 50);
     sprintf(prompt, "dsh-%d$: ", getpid());
     return prompt;
 }
 
 /* Fork wrapper class: handles error handling */
-pid_t Fork(void){
+pid_t Fork(void)
+{
   pid_t pid;
   if((pid = fork()) < 0){
     devilError("Fork error");
