@@ -189,7 +189,10 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
 char* promptmsg() 
 {
     /* Modify this to include pid */
-	return ("dsh_%d$ ", getpid());
+    //if (!is_interactive) return ""; // in batch mode don't print prompt
+    char *prompt = (char *) malloc (sizeof(char) * 50);
+    sprintf(prompt, "dsh-%d$: ", getpid());
+    return prompt;
 }
 
 /* Fork wrapper class: handles error handling */
