@@ -1,5 +1,4 @@
 #include "dsh.h"
-//lalala
 void seize_tty(pid_t callingprocess_pgid); /* Grab control of the terminal for the calling process pgid.  */
 void continue_job(job_t *j); /* resume a stopped job */
 void spawn_job(job_t *j, bool fg); /* spawn a new job */
@@ -8,6 +7,8 @@ job_t* find_job_by_pgid(pid_t pgid, job_t *first_job);
 void devilError(const char *message);
 pid_t Fork(void);
 
+/* Initializes the global var jobs_list */
+job_t* jobs_list = NULL;
 /* Sets the process group id for a given job and process */
 int set_child_pgid(job_t *j, process_t *p)
 {
@@ -155,7 +156,10 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
         */
 
         if (!strcmp(argv[0], "quit")) {
-            /* Your code here */
+            while(jobs_list->next != NULL) {
+                delete_job(jobs_list->next, jobs_list);
+            }
+            delete_job(jobs_list, jobs_list);
             exit(EXIT_SUCCESS);
 	}
         else if (!strcmp("jobs", argv[0])) {
@@ -204,16 +208,26 @@ pid_t Fork(void){
   }
   return pid;
 }
-
 int main() 
 {
 
 	init_dsh();
 	DEBUG("Successfully initialized\n");
+    /* creating dummy job at beginning of list */
+    jobs_list = (job_t*) malloc(sizeof(jobs_t));
+    jobs_list->next = NULL;
+    jobs_list->commandinfo = NULL;
+    jobs_list->first_process = NULL;
+    jobs_list->pgid = -1;
+    jobs_list->notified = true;
+    jobs_list->bg = true;
+    jobs_list->mystdin = NULL;
+    jobs_list->mystdout = NULL;
+    jobs_list->mystderr = NULL;
 
-	while(1) {
-    job_t *j = NULL;
-		if(!(j = readcmdline(promptmsg()))) {
+    while(1) {
+        job_t *j = NULL;
+		tif(!(j = readcmdline(promptmsg()))) {
 			if (feof(stdin)) { /* End of file (ctrl-d) */
 				fflush(stdout);
 				printf("\n");

@@ -63,7 +63,7 @@ typedef struct job {
 } job_t;
 
 /* Finds a job for which the pgid is still -1 (indicates not processed);
- * firt_job is the header to the job structure */
+ * first_job is the header to the job structure */
 job_t *detach_job(job_t *first_job);
 
 /* Return true if all processes in the job have stopped or completed.  */
