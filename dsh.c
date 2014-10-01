@@ -170,6 +170,16 @@ bool builtin_cmd(job_t *last_job, int argc, char **argv)
 	}
         else if (!strcmp("jobs", argv[0])) {
             /* Your code here */
+            job_t* list_iterator = jobs_list;
+            if (list_iterator == NULL) {
+                return true;
+            }
+            int counter = 0;
+            while (list_iterator != NULL) {
+                counter++;
+                printf("[%d]\t %d \t %s\n", counter, list_iterator->pgid, list_iterator->commandinfo);
+                list_iterator = list_iterator->next;
+            }
             return true;
         }
 	else if (!strcmp("cd", argv[0])) {
